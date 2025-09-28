@@ -31,6 +31,7 @@ This templater allows me to generate/scaffold new environments basically for any
 - [Notes:](#notes)
   - [Features to be added](#features-to-be-added)
 - [Releases](#releases)
+- [License](#license)
 
 
 ## Requirements
@@ -77,3 +78,10 @@ The following features are being implemented in couple of new releases
 # Releases
 
 Check out the [Changelog](CHANGELOG.md) to see what has changed, added.
+
+# License
+
+This cli is using https://github.com/urfave/cli
+under [MIT](https://github.com/urfave/cli/blob/main/LICENSE)
+
+
