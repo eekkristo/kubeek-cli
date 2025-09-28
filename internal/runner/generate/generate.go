@@ -10,13 +10,12 @@ import (
 	"kubeekcli/internal/engine/replace"
 	"kubeekcli/internal/engine/scan"
 	st "kubeekcli/internal/engine/state"
-	"kubeekcli/internal/fsio"
 	"kubeekcli/internal/prompt"
 )
 
 // RunInteractive prompts, renders into dst, and optionally emits BOTH config+state.
 // State keys are RELATIVE to dst.
-func RunInteractive(src, dst string, ac cfg.AppConfig, opts cfg.ResolvedOpts, force bool, meta *bool) error {
+func RunInteractive(src, dst string, ac cfg.AppConfig, force bool) error {
 
 	if info, err := os.Stat(dst); err == nil && info.IsDir() {
 		if err := os.RemoveAll(dst); err != nil {
@@ -27,7 +26,7 @@ func RunInteractive(src, dst string, ac cfg.AppConfig, opts cfg.ResolvedOpts, fo
 		return err
 	}
 
-	found, err := scan.DiscoverPlaceholders(src, opts.Exts, opts.ExcludeDirs, opts.ExcludeFiles)
+	found, err := scan.DiscoverPlaceholders(src)
 	if err != nil {
 		return err
 	}
@@ -75,18 +74,11 @@ func RunInteractive(src, dst string, ac cfg.AppConfig, opts cfg.ResolvedOpts, fo
 
 		if d.IsDir() {
 			exDir := map[string]struct{}{}
-			for _, ed := range opts.ExcludeDirs {
-				exDir[ed] = struct{}{}
-			}
+
 			if _, skip := exDir[d.Name()]; skip {
 				return filepath.SkipDir
 			}
 			return os.MkdirAll(target, 0o755)
-		}
-
-		base := d.Name()
-		if fsio.MatchAnyFilePattern(base, opts.ExcludeFiles) {
-			return nil
 		}
 
 		data, rerr := os.ReadFile(p)
@@ -95,12 +87,8 @@ func RunInteractive(src, dst string, ac cfg.AppConfig, opts cfg.ResolvedOpts, fo
 		}
 		content := string(data)
 
-		if len(opts.Exts) > 0 && !fsio.MatchesIncluded(base, opts.Exts) {
-			return os.WriteFile(target, []byte(content), 0644)
-		}
-
 		lines := strings.Split(content, "\n")
-		newLines, entries := replace.RenderLinesWithState(lines, answers)
+		newLines, entries := replace.RenderLines(lines, answers)
 		if err := os.WriteFile(target, []byte(strings.Join(newLines, "\n")), 0644); err != nil {
 			return err
 		}

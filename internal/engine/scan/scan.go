@@ -8,7 +8,7 @@ import (
 )
 
 // Discover placeholders by scanning text for tokens like _name_ / _FOO_ / __Bar__
-func DiscoverPlaceholders(root string, exts, excludeDirs, excludeFiles []string) ([]string, error) {
+func DiscoverPlaceholders(root string) ([]string, error) {
 	set := map[string]struct{}{}
 
 	err := filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
@@ -16,20 +16,9 @@ func DiscoverPlaceholders(root string, exts, excludeDirs, excludeFiles []string)
 			return err
 		}
 		if d.IsDir() {
-			for _, ex := range excludeDirs {
-				if ex == d.Name() {
-					return filepath.SkipDir
-				}
-			}
 			return nil
 		}
-		base := d.Name()
-		if skipFile(base, excludeFiles) {
-			return nil
-		}
-		if len(exts) > 0 && !hasIncluded(base, exts) {
-			return nil
-		}
+
 		b, rerr := os.ReadFile(p)
 		if rerr != nil {
 			return rerr
@@ -81,46 +70,6 @@ func validToken(t string) bool {
 	for i := 1; i < len(t)-1; i++ {
 		c := t[i]
 		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
-			return true
-		}
-	}
-	return false
-}
-
-func hasIncluded(base string, exts []string) bool {
-	ext := strings.ToLower(filepath.Ext(base))
-	for _, e := range exts {
-		if strings.ToLower(e) == ext {
-			return true
-		}
-	}
-	return false
-}
-
-func skipFile(base string, excludeFiles []string) bool {
-	lbase := strings.ToLower(base)
-	for _, raw := range excludeFiles {
-		p := strings.TrimSpace(raw)
-		if p == "" {
-			continue
-		}
-		lp := strings.ToLower(p)
-		if strings.HasPrefix(lp, ".") && !strings.ContainsAny(lp, "*?[") {
-			if strings.HasSuffix(lbase, lp) {
-				return true
-			}
-			continue
-		}
-		if !strings.ContainsAny(lp, "*?[]/\\.") {
-			if strings.HasSuffix(lbase, "."+lp) {
-				return true
-			}
-			continue
-		}
-		if ok, _ := filepath.Match(lp, lbase); ok {
-			return true
-		}
-		if lbase == lp {
 			return true
 		}
 	}
