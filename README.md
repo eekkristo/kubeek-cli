@@ -46,7 +46,7 @@ go mod tidy
 
 ## Install
 
-Download from release
+Download from [release](https://github.com/eekkristo/kubeek-cli/releases)
 
 ## Compire yourself
 Clone and build:
