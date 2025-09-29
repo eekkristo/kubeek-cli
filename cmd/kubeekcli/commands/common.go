@@ -10,6 +10,16 @@ import (
 	"kubeekcli/internal/prompt"
 )
 
+// resolveGenerateDest determines the destination path for generated files based on CLI flags and arguments.
+// It prompts the user if the destination exists and may overwrite, unless the "force" flag is set.
+// Parameters:
+//
+//	c - the CLI command containing flags and arguments.
+//
+// Returns:
+//
+//	string - the resolved destination path.
+//	error  - any error encountered during resolution or user interaction.
 func resolveGenerateDest(c *cli.Command) (string, error) {
 	dst := strings.TrimSpace(c.String("out"))
 	if dst == "" {

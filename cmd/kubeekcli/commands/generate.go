@@ -23,7 +23,7 @@ func GenerateCmd() *cli.Command {
 			&cli.StringFlag{Name: "name", Usage: "Name of the folder to be created (Rquired)", Value: "generated", Required: true},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
-			var ac config.AppConfig
+			ac := config.DefaultAppConfig()
 			var err error
 
 			if c.Bool("no-config") {
@@ -38,8 +38,9 @@ func GenerateCmd() *cli.Command {
 					}
 				}
 			}
+			// Ensure the map is non-nil before merging (maps.Copy panics on nil dst)
 			if ac.Placeholders == nil {
-				ac.Placeholders = config.Config{}
+				ac.Placeholders = make(config.Config)
 			}
 			maps.Copy(ac.Placeholders, parseDefaults(c.String("defaults")))
 

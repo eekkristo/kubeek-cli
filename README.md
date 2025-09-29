@@ -24,15 +24,21 @@ This templater allows me to generate/scaffold new environments basically for any
 - [kubeekcli](#kubeekcli)
   - [Why yet another templating engine?](#why-yet-another-templating-engine)
 - [Table of Contents](#table-of-contents)
+- [Install](#install)
+- [Compile yourself](#compile-yourself)
   - [Requirements](#requirements)
-  - [Install](#install)
-  - [Compire yourself](#compire-yourself)
 - [Quick Start (TL;DR)](#quick-start-tldr)
 - [Notes:](#notes)
   - [Features to be added](#features-to-be-added)
 - [Releases](#releases)
+- [Contributing](#contributing)
 - [License](#license)
 
+# Install
+
+Download from [release](https://github.com/eekkristo/kubeek-cli/releases)
+
+# Compile yourself
 
 ## Requirements
 
@@ -45,11 +51,6 @@ Dependencies are managed with Go modules. Run:
 go mod tidy
 ```
 
-## Install
-
-Download from [release](https://github.com/eekkristo/kubeek-cli/releases)
-
-## Compire yourself
 Clone and build:
 
 ```
@@ -66,7 +67,9 @@ go build -o bin/kubeekcli ./cmd/kubeekcli
 
 # Notes:
 
-This is still in early phase. Additionally I am by no means any senior developer. I just like to develop from time to time and mess around.
+This is still in early phase with fixes here and there. No plan yet for full `v1.0.0`
+
+I will just add stuff as I feel I need them.
 
 ## Features to be added
 
@@ -78,6 +81,10 @@ The following features are being implemented in couple of new releases
 # Releases
 
 Check out the [Changelog](CHANGELOG.md) to see what has changed, added.
+
+# Contributing
+
+Check out the [Contributing](CONTRIBUTING.md)
 
 # License
 
