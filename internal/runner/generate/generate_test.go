@@ -29,7 +29,7 @@ func readFile(t *testing.T, p string) string {
 	return string(b)
 }
 
-func TestGenerate(t *testing.T) {
+func TestPrompGenerate(t *testing.T) {
 	td := t.TempDir()
 	src := filepath.Join(td, "kubeekcli_template")
 	dst := filepath.Join(td, "kubeekcli_generated")
