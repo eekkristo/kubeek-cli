@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"     # push tags like v1.2.3
+
+permissions:
+  contents: write     # needed to create releases & upload assets
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # GoReleaser needs tags & history
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      # Optional: cache go modules/build cache for faster builds
+      - name: Cache Go
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      # 🔎 Pull the matching section from CHANGELOG.md for the current tag.
+      # Accepts headings like:
+      #   ## v1.2.3
+      #   ## [v1.2.3] - 2025-10-04
+      - name: Prepare release notes from CHANGELOG.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"         # e.g., v1.2.3
+          NOTES_FILE="$RUNNER_TEMP/RELEASE_NOTES.md"
+
+          if [[ ! -f CHANGELOG.md ]]; then
+            echo "No CHANGELOG.md found; will let GoReleaser auto-generate notes."
+            exit 0
+          fi
+
+          # Extract the section that begins with '## vX' or '## [vX]' and ends before the next '## '
+          awk -v tag="$TAG" '
+            BEGIN { insec=0 }
+            /^##[[:space:]]/ {
+              if (insec) exit
+              # Match "## vX.Y.Z" or "## [vX.Y.Z" (with optional trailing stuff)
+              if ($0 ~ "^##[[:space:]]*\\[" tag "\\]" || $0 ~ "^##[[:space:]]*" tag) { insec=1; next }
+            }
+            insec { print }
+          ' CHANGELOG.md > "$NOTES_FILE" || true
+
+          # Strip a possible leading blank line
+          sed -i '1{/^[[:space:]]*$/d;}' "$NOTES_FILE" || true
+
+          if [[ -s "$NOTES_FILE" ]]; then
+            echo "RELEASE_NOTES=$NOTES_FILE" >> $GITHUB_ENV
+            echo "✅ Found changelog section for $TAG."
+          else
+            echo "ℹ️ No matching section for $TAG in CHANGELOG.md; GoReleaser will use generated notes."
+          fi
+
+      - name: Decide GoReleaser args
+        shell: bash
+        run: |
+          if [[ -n "${RELEASE_NOTES:-}" ]]; then
+            echo "GORELEASER_ARGS=release --clean --release-notes=${RELEASE_NOTES}" >> $GITHUB_ENV
+          else
+            echo "GORELEASER_ARGS=release --clean" >> $GITHUB_ENV
+          fi
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: ${{ env.GORELEASER_ARGS }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

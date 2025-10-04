@@ -1,0 +1,42 @@
+project_name: kubeekcli
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: main
+    main: ./cmd/kubeekcli
+    binary: kubeekcli
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: archives
+    builds: [main]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  # If CHANGELOG.md had a section for the tag, we pass it via --release-notes in the workflow.
+  # Otherwise, let GoReleaser generate from commits/PRs:
+  use: github
+  sort: asc
+
+release:
+  prerelease: auto   # marks pre-releases for tags like v1.2.3-rc.1
