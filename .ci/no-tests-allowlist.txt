@@ -1,0 +1,8 @@
+kubeekcli/cmd/kubeekcli
+kubeekcli/cmd/kubeekcli/commands
+kubeekcli/internal/config
+kubeekcli/internal/engine/replace
+kubeekcli/internal/engine/scan
+kubeekcli/internal/engine/state
+kubeekcli/internal/fsio
+kubeekcli/internal/prompt
