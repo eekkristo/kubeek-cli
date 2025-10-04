@@ -7,19 +7,51 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
 
-    - name: Build
-      run: go build -v ./...
+      # 🔒 Fail if any NEW package has no tests (grandfather current allowlist)
+      - name: Enforce tests per package (grandfathered)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASELINE=".ci/no-tests-allowlist.txt"
 
-    - name: Test
-      run: go test -v ./...
+          if [[ ! -f "$BASELINE" ]]; then
+            echo "⚠️ Baseline missing: $BASELINE"
+            echo "Commit your generated allowlist to the repo."
+            exit 2
+          fi
+
+          # List packages that currently have no *_test.go (ignore vendor/mocks/testdata)
+          current=$(
+            go list -f '{{if and (eq (len .TestGoFiles) 0) (eq (len .XTestGoFiles) 0)}}{{.ImportPath}}{{end}}' ./... \
+              | grep -Ev '(^$|/vendor/|/mocks?/|/mock/|/testdata/)' \
+              | sort -u
+          )
+
+          # Anything in "current" that is NOT in the baseline is a NEW violation
+          new_missing=$(comm -23 <(printf "%s\n" "$current") <(sort -u "$BASELINE") || true)
+
+          if [[ -n "${new_missing}" ]]; then
+            echo "❌ New packages without tests (not in ${BASELINE}):"
+            echo "${new_missing}"
+            echo
+            echo "If any are intentional (temporary), add them to ${BASELINE} (not recommended) or add tests."
+            exit 1
+          fi
+
+          echo "✅ No new packages without tests."
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
