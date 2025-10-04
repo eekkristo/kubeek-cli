@@ -44,7 +44,7 @@ jobs:
             echo "❌ New packages without tests (not in ${BASELINE}):"
             echo "${new_missing}"
             echo
-            echo "If any are intentional (temporary), add them to ${BASELINE} (not recommended) or add tests."
+            echo "Update the allowlist if these are acceptable, otherwise add tests."
             exit 1
           fi
 
