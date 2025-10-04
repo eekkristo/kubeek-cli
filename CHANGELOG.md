@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [N/A] - 2025-09-29
 
+### Added
+
+- Init Go tests for generate config
+  
 ### Changed
 
 - Refactored the variables to be more readable
