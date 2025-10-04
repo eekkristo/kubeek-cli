@@ -1,3 +1,4 @@
+# .goreleaser.yaml
 project_name: kubeekcli
 
 before:
@@ -5,7 +6,7 @@ before:
     - go mod tidy
 
 builds:
-  - id: main
+  - id: kubeekcli
     main: ./cmd/kubeekcli
     binary: kubeekcli
     env:
@@ -20,7 +21,7 @@ builds:
 
 archives:
   - id: archives
-    builds: [main]
+    builds: [kubeekcli]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
@@ -33,10 +34,11 @@ checksum:
   name_template: "checksums.txt"
 
 changelog:
-  # If CHANGELOG.md had a section for the tag, we pass it via --release-notes in the workflow.
-  # Otherwise, let GoReleaser generate from commits/PRs:
+  # If your workflow passes a section from CHANGELOG.md via --release-notes,
+  # GoReleaser will use that; otherwise it will generate notes from commits.
   use: github
   sort: asc
 
 release:
-  prerelease: auto   # marks pre-releases for tags like v1.2.3-rc.1
+  # Tag like v0.2.0-rc.1 will be marked as a prerelease automatically.
+  prerelease: auto
