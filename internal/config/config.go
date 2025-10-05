@@ -8,8 +8,10 @@ import (
 type Config map[string]string
 
 type AppConfig struct {
-	Placeholders Config   `json:"placeholders"`
-	Exts         []string `json:"exts"`
+	Placeholders Config   `json:"placeholders"`  // Placeholder values for rendering template
+	Exts         []string `json:"exts"`          // Extensions to read from
+	ExcludeDirs  []string `json:"exclude_dirs"`  // Excluded folders from rendering
+	ExcludeFiles []string `json:"exclude_files"` // Excluded files from rendering
 }
 
 func DefaultAppConfig() AppConfig {

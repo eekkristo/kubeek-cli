@@ -18,8 +18,6 @@ func GenerateCmd() *cli.Command {
 		Usage: "Interactively fill placeholders and generate a new folder.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "config.json", Usage: "optional config file with defaults"},
-			&cli.BoolFlag{Name: "no-config", Usage: "do not load a config file; use only --defaults and discovered placeholders"},
-			&cli.BoolFlag{Name: "interactive", Usage: "prompt for placeholder values (default true)", Value: true},
 			&cli.BoolFlag{Name: "force", Aliases: []string{"f"}, Usage: "overwrite destination folder without prompting"},
 			&cli.StringSliceFlag{Name: "defaults", Aliases: []string{"d"}, Usage: "pass argumants directly via cli"},
 			&cli.StringFlag{Name: "template", Usage: "name of the folder that is taken as an input", Value: "./templates"},
@@ -30,9 +28,7 @@ func GenerateCmd() *cli.Command {
 			var err error
 			var interactive = true
 
-			if c.Bool("no-config") {
-				ac = config.AppConfig{Placeholders: config.Config{}}
-			} else if len(c.StringSlice("defaults")) > 0 {
+			if len(c.StringSlice("defaults")) > 0 {
 				maps.Copy(ac.Placeholders, parseDefaults(strings.Join(c.StringSlice("defaults"), ",")))
 				interactive = false
 			} else if c.String("config") != "" {
