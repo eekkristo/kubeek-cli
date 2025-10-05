@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added cli args ``--defaults`` that allow you to generate template without prompts
 
+## Fixed
+
+- Fixed issue where template is rendered when you canceled the prompt
+
 ## [v0.1.2] - 2025-10-04
 
 ### Added
