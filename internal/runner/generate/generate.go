@@ -13,36 +13,20 @@ import (
 	"kubeekcli/internal/prompt"
 )
 
-// RunInteractive prompts, renders into dst, and optionally emits BOTH config+state.
+// Render prompts, renders into dst, and optionally emits BOTH config+state.
 // State keys are RELATIVE to dst.
-func RunInteractive(src, dst string, ac cfg.AppConfig, force bool) error {
-
-	if info, err := os.Stat(dst); err == nil && info.IsDir() {
-		if err := os.RemoveAll(dst); err != nil {
-			return err
-		}
-	}
-	if err := os.MkdirAll(dst, 0o755); err != nil {
-		return err
-	}
+// If defaults omitted, ignore prompt
+func Render(src, dst string, ac cfg.AppConfig, interactive bool, force bool) error {
 
 	found, err := scan.DiscoverPlaceholders(src)
+
 	if err != nil {
 		return err
 	}
-	seen := map[string]struct{}{}
-	for _, ph := range found {
-		seen[ph] = struct{}{}
-	}
-	for ph := range ac.Placeholders {
-		if _, ok := seen[ph]; !ok {
-			found = append(found, ph)
-		}
-	}
 
 	answers := cfg.Config{}
-	if len(found) > 0 {
-		fmt.Println("Provide values for placeholders (press Enter to accept default).")
+	if len(found) > 0 && interactive {
+		fmt.Println("Provide values for placeholders (press Enter to accept default from config.json).")
 		for _, ph := range found {
 			def := ac.Placeholders[ph]
 			promptTxt := ph
@@ -58,6 +42,28 @@ func RunInteractive(src, dst string, ac cfg.AppConfig, force bool) error {
 			} else {
 				answers[ph] = line
 			}
+		}
+		// Omit from arguments passed via --defaults
+	} else {
+		answers = ac.Placeholders
+	}
+
+	if info, err := os.Stat(dst); err == nil && info.IsDir() {
+		if err := os.RemoveAll(dst); err != nil {
+			return err
+		}
+	}
+	if err := os.MkdirAll(dst, 0o755); err != nil {
+		return err
+	}
+
+	seen := map[string]struct{}{}
+	for _, ph := range found {
+		seen[ph] = struct{}{}
+	}
+	for ph := range ac.Placeholders {
+		if _, ok := seen[ph]; !ok {
+			found = append(found, ph)
 		}
 	}
 

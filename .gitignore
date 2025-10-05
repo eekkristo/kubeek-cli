@@ -35,6 +35,5 @@ templates/
 
 scripts/
 dist/
-test/
-tests/
+test*/
 tools/
