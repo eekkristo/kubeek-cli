@@ -59,7 +59,7 @@ func TestPrompGenerate(t *testing.T) {
 		w.Close()
 	}()
 
-	if err := generate.RunInteractive(src, dst, ac, true); err != nil {
+	if err := generate.Render(src, dst, ac, false, true); err != nil {
 		t.Fatalf("generate.RunInteractive: %v", err)
 	}
 

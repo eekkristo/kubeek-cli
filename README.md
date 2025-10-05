@@ -62,8 +62,10 @@ go build -o bin/kubeekcli ./cmd/kubeekcli
 # Quick Start (TL;DR)
 
 1. Put template files in ./templates/ with placeholders using underscores `_PLACEHOLDER_`, e.g `_clustername_`.
-2. kubeekcli generate --name <name-of-folder> 
+2. kubeekcli generate --name <name-of-folder> or run kubeekcli generate --name <name-of-folder> --defaults `_PLACEHOLDER`=`VALUES`
 3. Follow prompt
+
+> Note: You can daisy chain args via cli using multiple --defaults, eg --defaults _placeholder1_=value1 --defaults _placeholder2_=value2
 
 # Notes:
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"maps"
 	"os"
+	"strings"
 
 	cli "github.com/urfave/cli/v3"
 
@@ -18,17 +19,25 @@ func GenerateCmd() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "config.json", Usage: "optional config file with defaults"},
 			&cli.BoolFlag{Name: "no-config", Usage: "do not load a config file; use only --defaults and discovered placeholders"},
+			&cli.BoolFlag{Name: "interactive", Usage: "prompt for placeholder values (default true)", Value: true},
 			&cli.BoolFlag{Name: "force", Aliases: []string{"f"}, Usage: "overwrite destination folder without prompting"},
-			&cli.StringFlag{Name: "template", Usage: "Name of the folder that is taken as an input", Value: "./templates"},
-			&cli.StringFlag{Name: "name", Usage: "Name of the folder to be created (Rquired)", Value: "generated", Required: true},
+			&cli.StringSliceFlag{Name: "defaults", Aliases: []string{"d"}, Usage: "pass argumants directly via cli"},
+			&cli.StringFlag{Name: "template", Usage: "name of the folder that is taken as an input", Value: "./templates"},
+			&cli.StringFlag{Name: "name", Usage: "name of the folder to be created (Rquired)", Value: "generated", Required: true},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			ac := config.DefaultAppConfig()
 			var err error
+			var interactive = true
 
 			if c.Bool("no-config") {
+				println("no config")
 				ac = config.AppConfig{Placeholders: config.Config{}}
-			} else {
+			} else if len(c.StringSlice("defaults")) > 0 {
+				maps.Copy(ac.Placeholders, parseDefaults(strings.Join(c.StringSlice("defaults"), ",")))
+				interactive = false
+			} else if c.String("config") != "" {
+				println("config")
 				ac, _, err = config.LoadAppConfig(c.String("config"))
 				if err != nil {
 					if os.IsNotExist(err) {
@@ -42,14 +51,13 @@ func GenerateCmd() *cli.Command {
 			if ac.Placeholders == nil {
 				ac.Placeholders = make(config.Config)
 			}
-			maps.Copy(ac.Placeholders, parseDefaults(c.String("defaults")))
 
 			dst, err := resolveGenerateDest(c)
 			if err != nil {
 				return err
 			}
 
-			return generate.RunInteractive(c.String("template"), dst, ac, c.Bool("force"))
+			return generate.Render(c.String("template"), dst, ac, interactive, c.Bool("force"))
 		},
 	}
 }
