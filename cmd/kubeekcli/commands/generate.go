@@ -31,13 +31,11 @@ func GenerateCmd() *cli.Command {
 			var interactive = true
 
 			if c.Bool("no-config") {
-				println("no config")
 				ac = config.AppConfig{Placeholders: config.Config{}}
 			} else if len(c.StringSlice("defaults")) > 0 {
 				maps.Copy(ac.Placeholders, parseDefaults(strings.Join(c.StringSlice("defaults"), ",")))
 				interactive = false
 			} else if c.String("config") != "" {
-				println("config")
 				ac, _, err = config.LoadAppConfig(c.String("config"))
 				if err != nil {
 					if os.IsNotExist(err) {
